@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ulam Spiral</title>
+    <style type="text/css">
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        height: 100vh;
+        display: grid;
+        place-items: center;
+        background: hsl(0, 0%, 96%);
+      }
+
+      .canvas {
+        width: 75vmin;
+        height: 75vmin;
+        background: hsl(0, 0%, 100%);
+        border-radius: 0.375rem;
+      }
+
+      .controls {
+        position: fixed;
+        top: 0%;
+        left:50%;
+        width: 75vmin;
+        transform: translate(-50%, 20px);
+        display: flex;
+        place-items: center;
+      }
+
+      .controls > button {
+        padding-top: 0.8rem;
+        padding-bottom: 0.8rem; 
+        padding-left: 1.6rem;
+        padding-right: 1.6rem; 
+        background-color: #3B82F6;
+        color: white;
+        font-weight: 600; 
+        border-radius: 0.25rem;
+        border:none;
+        cursor: pointer;
+        margin: auto;
+      }
+
+      .controls > button:hover {
+        background-color: #1D4ED8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="controls">
+      <button onclick="exportImage()">Generate</button>
+    </div>
+    <svg class="canvas" viewport="0 0 200 200">
+      <rect width="100%" height="100%" fill="white" />
+    </svg>
+    <script type="text/javascript">
+      const SVG = document.querySelector("svg.canvas");
+      const stripeWidth = 4;
+      const N = Math.round(SVG.clientWidth / stripeWidth);
+
+      function random(lower, upper) {
+        return Math.round(Math.random() * upper - lower);
+      }
+
+      function randomFrom(array) {
+        const n = array.length;
+        return array[random(0, n - 1)];
+      }
+
+      let empty = [];
+      for (let i = 0; i < N; i++) {
+        empty.push([]);
+        for (let j = 0; j < N; j++) {
+          empty[i].push(0);
+        }
+      }
+
+      function is_prime(number) {
+        if (number < 2) return false;
+        if (number == 2) return true;
+        if (number % 2 == 0) return false;
+        for (let i = 3; i <= Math.round(Math.sqrt(number)); i += 2)
+          if (number % i == 0) return false;
+        return true;
+      }
+
+      function* getNumber(limit) {
+        for (let i = limit; i > 0; i--) {
+          if (is_prime(i)) yield true;
+          else yield false;
+        }
+      }
+
+      let number = getNumber(N * N);
+      const last = Math.round(N / 2);
+      let level = 0;
+      while (level < last) {
+        const end = N - 1 - level;
+        for (let i = end; i > level; i--) empty[end][i] = number.next().value;
+        for (let i = end; i > level; i--) empty[i][level] = number.next().value;
+        for (let i = level; i < end; i++) empty[level][i] = number.next().value;
+        for (let i = level; i < end; i++) empty[i][end] = number.next().value;
+
+        level += 1;
+      }
+
+      if (N % 2) {
+        empty[last - 1][last - 1] = 1;
+      }
+
+      // console.log(empty);
+      // console.log(empty.flat());
+
+      function setAttributes(element, attributes) {
+        Object.keys(attributes).forEach((attr) => {
+          element.setAttribute(attr, attributes[attr]);
+        });
+      }
+
+      let colors = ["#22c55e", "#ef4444"]
+
+      for (let i = 0; i < N; i++) {
+        for (let j = 0; j < N; j++) {
+          if (empty[i][j]) {
+            const rect = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "circle",
+            );
+            color = randomFrom(colors);
+            setAttributes(rect, {
+              cx: j * stripeWidth,
+              cy: i * stripeWidth,
+              r: Math.round(stripeWidth / 2),
+              fill: color,
+            });
+
+            SVG.appendChild(rect);
+          }
+        }
+      }
+
+      function exportImage() {
+            const svgContent = document.querySelector('svg');
+
+            svgContent.width = "5000px";
+            svgContent.height = "5000px";
+
+            const svgDataUrl = 'data:image/svg+xml,' + encodeURIComponent(new XMLSerializer().serializeToString(svgContent));
+
+            const img = new Image();
+            img.src = svgDataUrl;
+
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+
+                // canvas.width = SVG.clientWidth;
+                // canvas.height = SVG.clientHeight;
+                canvas.width = SVG.clientWidth;
+                canvas.height = SVG.clientHeight;
+
+                context.drawImage(img, 0, 0);
+
+                const jpgDataUrl = canvas.toDataURL('image/jpeg');
+
+                const link = document.createElement('a');
+                link.href = jpgDataUrl;
+                link.download = 'ulam_spiral.jpg';
+                link.click();
+            };
+        }
+    </script>
+  </body>
+</html>
