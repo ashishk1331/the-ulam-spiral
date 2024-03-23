@@ -63,8 +63,8 @@
     </svg>
     <script type="text/javascript">
       const SVG = document.querySelector("svg.canvas");
-      const stripeWidth = 4;
-      const N = Math.round(SVG.clientWidth / stripeWidth);
+      const N = 100;
+      const stripeWidth = SVG.clientWidth / N;
 
       function random(lower, upper) {
         return Math.round(Math.random() * upper - lower);
@@ -125,7 +125,7 @@
         });
       }
 
-      let colors = ["#22c55e", "#ef4444"]
+      let colors = ["#22c55e", "#f87171", "#60a5fa", "#f59e0b", "#f472b6", "#10b981", "#3b82f6", "#fbbf24"];
 
       for (let i = 0; i < N; i++) {
         for (let j = 0; j < N; j++) {
@@ -136,8 +136,8 @@
             );
             color = randomFrom(colors);
             setAttributes(rect, {
-              cx: j * stripeWidth,
-              cy: i * stripeWidth,
+              cx: j * stripeWidth + (stripeWidth / 2),
+              cy: i * stripeWidth + (stripeWidth / 2),
               r: Math.round(stripeWidth / 2),
               fill: color,
             });
